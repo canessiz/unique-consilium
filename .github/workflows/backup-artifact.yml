@@ -1,0 +1,25 @@
+name: Otomatik Yedekleme (Artifact)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu checkout et
+        uses: actions/checkout@v3
+
+      - name: Proje dosyalarını ziple
+        run: |
+          zip -r backup-${{ github.sha }}.zip . -x "*.git*"
+
+      - name: Zip dosyasını artifact olarak kaydet
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.sha }}
+          path: backup-${{ github.sha }}.zip
