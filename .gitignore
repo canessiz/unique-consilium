@@ -1,2 +1,6 @@
 unique-consilium-frontend/node_modules/
 unique-consilium-frontend/.next/
+unique-consilium-frontend/out/
+unique-consilium-frontend/.env.local
+unique-consilium-frontend/.env.development.local
+unique-consilium-frontend/.env.production.local
