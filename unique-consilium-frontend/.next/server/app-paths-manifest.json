@@ -1,1 +1,6 @@
-{}
+{
+  "/page": "app/page.js",
+  "/customer-login/page": "app/customer-login/page.js",
+  "/faq/page": "app/faq/page.js",
+  "/team/page": "app/team/page.js"
+}

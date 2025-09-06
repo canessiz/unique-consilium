@@ -1,0 +1,22 @@
+﻿#!/bin/sh
+# Husky pre-commit: Lint, format-check, and run related tests for staged TS/TSX files.
+
+set -e
+
+# If no staged .ts/.tsx files (excluding .d.ts), exit.
+if [ -z "$(git diff --cached --name-only --diff-filter=ACMR -z -- '*.ts' '*.tsx' ':(exclude)*.d.ts' | tr -d '\0')" ]; then
+  exit 0
+fi
+
+# 1) ESLint (fail on warnings)
+git diff --cached --name-only --diff-filter=ACMR -z -- '*.ts' '*.tsx' ':(exclude)*.d.ts' \
+  | xargs -0 npx eslint --max-warnings=0 --cache --cache-location .eslintcache
+
+# 2) Prettier check
+git diff --cached --name-only --diff-filter=ACMR -z -- '*.ts' '*.tsx' ':(exclude)*.d.ts' \
+  | xargs -0 npx prettier -c
+
+# 3) Jest related tests (CI mode)
+export CI=true
+git diff --cached --name-only --diff-filter=ACMR -z -- '*.ts' '*.tsx' ':(exclude)*.d.ts' \
+  | xargs -0 npx jest --bail --findRelatedTests --passWithNoTests

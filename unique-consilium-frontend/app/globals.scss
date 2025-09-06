@@ -1,0 +1,957 @@
+@use '@carbon/styles/scss/spacing' as *;
+@use '@carbon/styles/scss/type' as type;
+@use '@carbon/styles/scss/grid' as grid;
+@use '@carbon/styles/scss/theme' as theme;
+@use '@carbon/styles/scss/layer' as *;
+@use 'sass:meta';
+@include grid.css-grid();
+
+/* (footer grid centering handled later in canonical rules) */
+
+/* Footer: legacy .site-footer rules removed; only .uc-footer used */
+
+
+/* Sayfa altındaki beyaz şeridi önlemek için güvenlik: */
+/* html/body margin reset (single source) */
+html, body { margin: 0; }
+
+/* Mega menu spacing custom properties (easy future tuning) */
+:root {
+	/* Precise header height to match IBM masthead (~49px) */
+	--uc-header-height: 3.0625rem; /* 49px */
+	/* IBM-like balanced spacing (slightly tighter bottom + gaps) */
+	--uc-mega-pad-top: var(--cds-spacing-10);      /* ~64px */
+	--uc-mega-pad-bottom: var(--cds-spacing-10);   /* ~64px */
+	--uc-mega-row-gap: var(--cds-spacing-10);      /* ~64px */
+	--uc-mega-col-gap: var(--cds-spacing-09);      /* ~48px */
+}
+
+/* İçerik-sonu margin reset tekil kural olarak aşağıda birleşik halde tanımlıdır */
+
+/* 2) Footer üstündeki ekstra boşluğu kes: margin collapsing'i durdur (blok yeni footer tanımıyla aşağıda birleşik) */
+
+/* 3) İçerik-sonu margin taşmasını temizle (footer’dan hemen önceki son blok) */
+main > :last-child,
+.cds--content > :last-child,
+body > :not(footer):last-child {
+	margin-block-end: 0;       /* son öğenin bottom margin’i boşluk bırakmasın */
+}
+
+/* 4) Footer’ın altı: legal bar hariç ekstra boşluk yok (aşağıda footer blokları tanımlı) */
+
+body { display:flex; flex-direction:column; }
+#main-content { flex:1 0 auto; }
+footer { flex-shrink:0; }
+
+/* Center Carbon grid container (canonical) */
+.cds--grid { margin-inline:auto; max-inline-size:1312px; box-sizing:border-box; padding-inline:$spacing-05; }
+
+/* Accessibility: Skip-to-content link (visible on focus) */
+.uc-skip {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-start: 0;
+	transform: translateY(-100%);
+	background: var(--cds-background-inverse);
+	color: var(--cds-text-on-color);
+	padding-inline: $spacing-05;
+	padding-block: $spacing-03;
+	text-decoration: none;
+	z-index: 9999;
+}
+.uc-skip:focus {
+	transform: translateY(0);
+}
+
+/* (deduped micro-interaction; see unified .uc-mega__link rules later) */
+
+/* Page spacing & helpers */
+.uc-page { padding-block: $spacing-08; }
+.uc-container { max-inline-size: 1200px; margin-inline: auto; padding-inline: $spacing-05; }
+.uc-stack-06 { margin-block-start: $spacing-06; }
+.uc-stack-08 { margin-block-start: $spacing-08; }
+.uc-pad-08 { padding-block: $spacing-08; }
+.uc-border-top { border-top: 1px solid var(--cds-border-subtle-01); }
+
+/* 16:9 media wrapper */
+.uc-media-16x9 { position: relative; block-size: 0; padding-block-start: 56.25%; }
+.uc-media-16x9 > * { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; }
+
+/* Simple link list */
+.uc-linklist { list-style: none; margin: 0; padding: 0; }
+.uc-linklist li + li { margin-block-start: $spacing-03; }
+
+
+/* Cookie bar container: fixed bottom, with safe spacing */
+.uc-cookiebar {
+	position: fixed;
+	inset-block-end: $spacing-05;     // bottom offset
+	inset-inline: $spacing-05;        // left & right offset
+	// Keep it above page content; rely on Carbon z-index token if available
+	// If $z-index-modal is available, use it; otherwise omit z-index.
+		@if meta.variable-exists('z-index-modal') {
+		z-index: $z-index-modal;
+	}
+
+	// Prevent edge clipping on devices with a bottom safe area
+	padding-bottom: env(safe-area-inset-bottom);
+
+	// Make notification occupy full width between the inline insets
+	// No hard-coded widths
+	width: auto;
+
+	// Ensure children fill the block nicely without extra margins
+	> * {
+		display: block;
+	}
+}
+
+/* === UC Mega Panel === */
+/* Force Carbon header and children to exact height */
+:where(.cds--header) {
+	min-block-size: var(--uc-header-height);
+	block-size: var(--uc-header-height);
+}
+:where(.cds--header) .cds--header__menu-bar,
+:where(.cds--header) .cds--header__global,
+:where(.cds--header) .cds--header__action,
+:where(.cds--header) .cds--header__menu,
+:where(.cds--header) .cds--header__menu-item,
+:where(.cds--header) .cds--header__name,
+:where(.cds--header) .cds--overflow-menu__trigger {
+	block-size: var(--uc-header-height);
+	align-items: center;
+}
+:where(.cds--header) .cds--header__name > a { display:inline-flex; align-items:center; block-size: var(--uc-header-height); }
+:where(.cds--header) .cds--header__menu-item > a,
+:where(.cds--header) .cds--header__menu-title {
+	display: inline-flex;
+	align-items: center;
+	block-size: var(--uc-header-height);
+}
+.uc-nav-overlay {
+	position: fixed;
+	inset-inline: 0;
+	top: var(--uc-header-bottom, 3rem); // header altında başlasın ki header erişilebilir kalsın
+	bottom: 0;
+	background: rgba(0, 0, 0, .35);
+	z-index: 5090; // panelin hemen altında
+}
+
+.uc-mega {
+	position: fixed;
+	inset-inline: 0;
+	top: var(--uc-header-bottom, 3rem);
+	background-color: #fff;
+	border-block-start: 1px solid var(--cds-border-subtle-01);
+	box-shadow: 0 2px 4px rgba(0,0,0,.08); /* lighter like IBM */
+	padding-block: var(--cds-spacing-08) var(--cds-spacing-07);
+	min-height: auto;
+	z-index: 9200;
+	transition: opacity .16s ease, transform .16s ease;
+	opacity:1; transform: translateY(0);
+}
+
+
+/* Docking effect: remove header bottom border when open */
+.uc-mega-open .cds--header { box-shadow:none; }
+.uc-mega-open .cds--header, .uc-mega-open .uc-mega { border-block-start-color: transparent; }
+
+/* Side rail mega variant */
+/* === Side rail (legacy) variant === */
+.uc-mega--rail { padding-block: var(--cds-spacing-09); }
+.uc-mega--rail .uc-mega__row { align-items: flex-start !important; }
+.uc-mega--rail .uc-mega__rail { border-inline-end: 1px solid var(--cds-border-subtle-01); width:240px; max-width:240px; flex:0 0 240px; }
+.uc-mega--rail .uc-mega-rail { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap: var(--cds-spacing-02); }
+.uc-mega--rail .uc-mega-rail__btn {appearance:none; background:transparent; border:0; text-align:left; padding: var(--cds-spacing-03) var(--cds-spacing-05); font: inherit; cursor:pointer; inline-size:100%; border-radius:0; color: var(--cds-text-secondary); line-height:1.25; letter-spacing:.16px;}
+.uc-mega--rail .uc-mega-rail__btn:hover { color: var(--cds-text-primary); background: var(--cds-layer-hover); }
+.uc-mega--rail .uc-mega-rail__btn:focus-visible { outline:2px solid var(--cds-focus); outline-offset:2px; }
+.uc-mega--rail .uc-mega-rail__btn.is-active { color: var(--cds-text-primary); font-weight:600; position:relative; background: transparent; }
+.uc-mega--rail .uc-mega-rail__btn.is-active::before { content:""; position:absolute; inset-inline-start:0; inset-block:0; width:4px; background: var(--cds-focus); }
+
+/* === Columns (IBM style) variant — tuned spacing via custom props === */
+.uc-mega--columns { padding-block: var(--uc-mega-pad-top) var(--uc-mega-pad-bottom); }
+.uc-mega--columns { /* slightly tighten top space */ padding-block-start: var(--cds-spacing-11, 5rem); }
+.uc-mega--columns .uc-mega__row { display:block; }
+/* Centered grid inside panel (matches IBM container feel) */
+.uc-mega-columns { list-style:none; margin:0 auto; padding:0 var(--cds-spacing-09) 0; display:grid; grid-template-columns:repeat(4,1fr); column-gap: var(--uc-mega-col-gap); row-gap: var(--uc-mega-row-gap); max-width:1224px; }
+.uc-mega-columns--compact3 { grid-template-columns:repeat(3,1fr); }
+.uc-mega-columns.uc-mega-columns--compact3 {
+	max-width: 960px; /* balanced width for 3 columns */
+	width: auto;
+	margin: 0; /* left aligned inside panel padding */
+	grid-auto-flow: column; /* fill top-to-bottom then next column */
+	grid-template-rows: repeat(2, auto);
+}
+.uc-mega.is-compact { --uc-mega-pad-top: var(--cds-spacing-09); --uc-mega-pad-bottom: var(--cds-spacing-10); --uc-mega-row-gap: var(--cds-spacing-10); }
+/* Flat variant */
+.uc-mega-columns--flat { grid-template-columns:repeat(4,1fr); }
+/* Neutralize old pair wrappers if present */
+.uc-mega-pair { display:contents; }
+@media (max-width: 1200px) { .uc-mega-columns { grid-template-columns:repeat(3,1fr); } }
+@media (max-width: 1056px) { .uc-mega-columns { grid-template-columns:repeat(2,1fr); row-gap: var(--cds-spacing-10); } }
+@media (max-width: 900px) { .uc-mega-columns { grid-template-columns:repeat(2,1fr); } }
+@media (max-width: 640px) { .uc-mega-columns { grid-template-columns:1fr; } }
+.uc-mega-columns__item { margin:0; }
+.uc-mega__col-link { display:inline-flex; align-items:center; gap: var(--cds-spacing-03); text-decoration:none; color: var(--cds-text-primary); font-weight:400; position:relative; padding: var(--cds-spacing-01) 0; @include type.type-style('body-short-02'); line-height:1.38; transition: color .12s ease, transform .12s ease; }
+.uc-mega__col-link:hover, .uc-mega__col-link:focus { color: var(--cds-link-primary, var(--cds-text-primary)); text-decoration:none; }
+.uc-mega__col-link:hover svg { transform: translateX(1px); }
+@media (prefers-reduced-motion: reduce) { .uc-mega__col-link:hover svg { transform:none; } }
+.uc-mega__col-link:focus-visible { outline:2px solid var(--cds-focus); outline-offset:2px; }
+.uc-mega__col-link svg { inline-size:1em; margin-inline-start: var(--cds-spacing-02); position:relative; top:-1px; transition: transform .12s ease; }
+
+/* Respect reduced motion globally for nav + mega */
+@media (prefers-reduced-motion: reduce) {
+	.uc-mega { transition: none !important; }
+	.uc-nav-trigger__icon { transition: none !important; }
+	.uc-mega__col-link, .uc-mega__col-link svg { transition: none !important; }
+}
+
+/* Nav trigger item custom spacing tweak (only our custom buttons) */
+.uc-nav-trigger-item + * { margin-inline-start: 0; }
+.uc-nav-trigger-item { position:relative; }
+
+.uc-mega__content { display:flex; flex-direction:column; gap: var(--cds-spacing-05); padding-inline: var(--cds-spacing-06); }
+.uc-mega__heading { margin:0 0 var(--cds-spacing-03); font-weight:600; font-size:1.25rem; line-height:1.3; letter-spacing:.16px; }
+.uc-mega-links { list-style:none; margin:0; padding:0; display:grid; row-gap: var(--cds-spacing-03); column-gap: var(--cds-spacing-06); grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr)); }
+.uc-mega__aside { border-inline-start:1px solid var(--cds-border-subtle-01); padding-inline-start: var(--cds-spacing-06); }
+.uc-mega__promo-eyebrow { margin:0 0 var(--cds-spacing-03); font-size:.75rem; letter-spacing:.5px; text-transform:uppercase; }
+.uc-mega__promo { display:flex; flex-direction:column; gap: var(--cds-spacing-04); }
+
+/* === NAV TRIGGER BASELINE ALIGNMENT FIX (IBM parity) === */
+.uc-nav-trigger { display:inline-flex; align-items:center; position:relative; block-size: var(--uc-header-height); padding-block:0; padding-inline: var(--cds-spacing-05); background:transparent; border:0; cursor:pointer; -webkit-font-smoothing:antialiased; @include type.type-style('body-compact-01'); /* compact nav type closer to IBM */ }
+.uc-nav-trigger { /* optical compensation: add extra end padding so chevron does not visually reduce inter-item whitespace */ padding-inline-end: calc(var(--cds-spacing-05) + var(--cds-spacing-02)); }
+.cds--header__nav-item .uc-nav-trigger { block-size: var(--uc-header-height); }
+.uc-nav-trigger.is-active { background: transparent; box-shadow:none; }
+.uc-nav-trigger:focus-visible { outline:2px solid var(--cds-focus); outline-offset:2px; }
+.uc-nav-trigger__label { display:inline-block; white-space:nowrap; }
+.uc-nav-trigger__icon { display:inline-flex; align-items:center; margin-inline-start: var(--cds-spacing-04); transition: transform .15s ease; }
+.uc-nav-trigger[aria-expanded="true"] .uc-nav-trigger__icon { transform: rotate(180deg); }
+/* Active/open trigger underline (non-intrusive) */
+/* Removed custom underline for IBM parity (no underline on open) */
+/* Clean up legacy borders */
+.uc-nav-trigger.is-active { border:0; }
+/* === END NAV TRIGGER FIX === */
+
+/* Light header parity: subtle default, stronger on hover/open */
+.cds--header .uc-nav-trigger {
+	color: var(--cds-text-secondary);
+	background: transparent;
+	font-weight: 400;
+}
+.cds--header .uc-nav-trigger:hover,
+.cds--header .uc-nav-trigger:focus-visible,
+.cds--header .uc-nav-trigger[aria-expanded="true"] {
+	color: var(--cds-text-primary);
+	background: var(--cds-layer-hover);
+}
+
+/* Consistent spacing between header nav items via flex gap (IBM-like breathing room) */
+:where(.cds--header) .cds--header__menu-bar { gap: var(--cds-spacing-07); margin-inline-start: var(--cds-spacing-05); }
+/* Fallback container gap (.cds--header__nav) to avoid stuck items on variant markup */
+:where(.cds--header) .cds--header__nav { gap: var(--cds-spacing-07); }
+/* Neutralize ad-hoc margin spacing to prevent double gaps */
+.uc-nav-trigger-item + * { margin-inline-start: 0; }
+.cds--header__nav-item + .uc-nav-trigger-item { margin-inline-start: 0; }
+.cds--header__nav .cds--header__nav-item + .cds--header__nav-item { margin-inline-start: 0; }
+/* When two custom triggers are adjacent, give them a little extra space */
+.cds--header .cds--header__menu-bar > .uc-nav-trigger-item + .uc-nav-trigger-item { margin-inline-start: var(--cds-spacing-06); }
+
+/* Global actions compact gap and breathing room on the end edge */
+:where(.cds--header) .cds--header__global { gap: var(--cds-spacing-04); margin-inline-end: var(--cds-spacing-05); }
+
+
+@media (max-width: 1311px) {
+	.uc-mega-columns { grid-template-columns:repeat(auto-fill,minmax(14rem,1fr)); max-width:1080px; }
+}
+@media (max-width: 1055px) {
+	.uc-mega--rail { position: static; box-shadow:none; padding-block: var(--cds-spacing-06) var(--cds-spacing-07); }
+	.uc-mega--rail .uc-mega__rail { border-inline-end:0; border-block-end:1px solid var(--cds-border-subtle-01); margin-block-end: var(--cds-spacing-05); width:auto; max-width:none; }
+	.uc-mega--rail .uc-mega__content { padding-inline:0; }
+	.uc-mega--rail .uc-mega-links { grid-template-columns:1fr; column-gap:0; }
+	.uc-mega--rail .uc-mega__aside { display:none; }
+	.uc-mega--columns { padding-block: var(--cds-spacing-08) var(--cds-spacing-07); }
+	.uc-mega-columns { padding-inline: var(--cds-spacing-05); grid-template-columns:repeat(2,minmax(0,1fr)); column-gap: var(--cds-spacing-08); row-gap: var(--cds-spacing-08); max-width:100%; }
+}
+@media (max-width: 671px) {
+    .uc-mega-columns { grid-template-columns:1fr; }
+}
+
+.uc-mega__link { display: inline-flex; align-items:center; gap: var(--cds-spacing-03); padding: var(--cds-spacing-03) 0; color: var(--cds-text-primary); text-decoration: none; transition: color .12s ease, transform .12s ease; font-size:.875rem; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.uc-mega__link:hover, .uc-mega__link:focus { transform: translateX(2px); color: var(--cds-link-primary, var(--cds-text-primary)); text-decoration: none; }
+
+/* Arrow uses currentColor (black) and sits close to title */
+.uc-mega__link svg {
+	fill: currentColor;
+	inline-size: 1em; /* keep consistent with font size */
+	margin-inline-start: var(--cds-spacing-03, 0.5rem);
+	vertical-align: -0.125em;
+}
+
+/* kill any inherited accent backgrounds inside the panel */
+.uc-mega .cds--row,
+.uc-mega .cds--col-sm-4,
+.uc-mega__link {
+	background: transparent !important;
+}
+
+/* === UC Mega Panel — medium height === */
+.uc-mega .cds--row {
+	/* Önceki sürüm satırı ortalıyordu; üstten hizalama daha doğal */
+	display: flex; /* gerekirse flex; istenirse grid varsayılanına dönülebilir */
+	flex-wrap: wrap;
+	min-height: auto; /* içerik kadar uzasın */
+	align-items: flex-start;
+}
+.uc-mega .cds--row + .cds--row {
+	margin-block-start: var(--cds-spacing-09, 3rem); /* generous space between rows */
+}
+/* (removed earlier initial uc-footer variant to avoid duplication) */
+
+/* Removed legacy .site-footer blocks */
+
+
+
+/* ——— HORIZONTAL OVERFLOW GUARD ——— */
+/* 1) Yan kaymayı globalde kapat (Carbon ile uyumlu) */
+:root,
+html,
+body {
+	overflow-x: clip; /* modern; clip desteklenmezse hidden çalışır */
+	inline-size: 100%;
+}
+
+@supports not (overflow-x: clip) {
+	:root, html, body { overflow-x: hidden; }
+}
+
+/* 2) Medya elemanları asla viewport’u aşmasın */
+img,
+video,
+canvas {
+	max-inline-size: 100%;
+	block-size: auto;
+	height: auto;
+	display: block;
+}
+
+/* 3) Flex/grid çocuklarının taşmasını engelle (Carbon columns) */
+.cds--row,
+[class^="cds--col"],
+[class*=" cds--col"] {
+	min-inline-size: 0; /* uzun içerikte taşmayı keser */
+}
+
+/* 4) Grid güvenliği: merkez + kutu modeli */
+/* site-footer grid rules removed */
+
+/* 5) “100vw” kaynaklı taşmaları yumuşat (varsa) */
+[style*="100vw"] {
+	inline-size: 100%;
+}
+
+/* (removed legacy header open-state rules to avoid duplication) */
+
+/* Ek güvenli override: herhangi başka bir kural tekrar center yaparsa */
+.uc-mega .cds--row.uc-mega__row { align-items: flex-start !important; }
+
+/* Footer grid centering guard (append-only) */
+/* site-footer centering guards removed (global .cds--grid handles) */
+
+/* (removed complex header open-state block; replaced with simpler scoped rules at file end) */
+
+/* --- Header overflow menu: pin to right edge to avoid clipping --- */
+:where(.cds--header, .cds--header__global) .cds--overflow-menu-options {
+	inset-inline-end: 0 !important; /* right: 0 */
+	inset-inline-start: auto !important; /* left: auto */
+	/* Carbon inline style left değerini yazabiliyorsa onu etkisiz kıl */
+	left: auto !important;
+	right: 0 !important;
+}
+
+/* (removed legacy trigger-based open-state rules; simplified version appended below) */
+
+/* --- Header overflow triggers: OPEN state -> white icon (scoped) --- */
+:where(.cds--header, .cds--header__global) .cds--overflow-menu__trigger[aria-expanded="true"] {
+	color: var(--cds-icon-inverse, #fff) !important;
+}
+:where(.cds--header, .cds--header__global) .cds--overflow-menu__trigger[aria-expanded="true"] svg {
+	fill: currentColor !important;
+}
+
+/* Gradient title — IBM style (blue → purple) */
+.uc-title-gradient {
+	--uc-grad-start: var(--cds-background-brand, #0f62fe);
+	--uc-grad-end: var(--cds-link-visited, #8a3ffc);
+	background-image: linear-gradient(90deg, var(--uc-grad-start), var(--uc-grad-end));
+	-webkit-background-clip: text;
+					background-clip: text;
+	color: transparent;
+}
+
+/* --- Hero layout helpers (Carbon token-first) --- */
+.uc-hero {
+	padding-block: var(--cds-spacing-09) var(--cds-spacing-08);
+}
+
+/* Visually hidden utility */
+.sr-only {
+	position: absolute !important;
+	inline-size: 1px !important;
+	block-size: 1px !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+/* .uc-media: keep 16:9 box from AspectRatio; ensure media fills via nested video rule */
+.uc-media video {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.uc-latest {
+	margin-block-start: var(--cds-spacing-07);
+}
+
+/* Sticky behavior for LatestNews on desktop */
+@media (min-width: 1056px) { /* lg breakpoint in Carbon */
+	.uc-latest {
+		position: sticky;
+		top: var(--cds-spacing-09); /* generous top offset below header */
+		align-self: flex-start; /* ensure it doesn't stretch */
+	}
+}
+
+/* === SectionTitle Component === */
+/* Base wrapper (hook for future layout adjustments) */
+.uc-sectiontitle { position:relative; }
+.uc-sectiontitle--center { text-align: center; }
+
+/* === UNIQUE CONSILIUM Footer (token-first + IBM parity layering) === */
+.uc-footer {
+	background-color: theme.$background-inverse;
+	color: theme.$text-inverse;
+	padding-block-start: $spacing-10; /* 64px */
+	padding-block-end: $spacing-09;   /* 48px */
+	margin-block: 0;
+	display: flow-root;
+
+	.uc-footer__brand-row { margin-block-end: $spacing-09; }
+	.uc-footer__brand { display:flex; align-items:center; }
+
+	.uc-footer__nav-row { margin-block-end: $spacing-09; }
+
+	.uc-footer__col {
+		@media (max-width: 1055px) {
+			margin-block-end: $spacing-07; /* 32px */
+			&:last-child { margin-block-end: 0; }
+		}
+		@media (min-width: 1056px) {
+			flex: 1 1 0; min-width: 0; padding-inline: $spacing-05; /* 16px */
+			&:first-child { padding-inline-start: 0; }
+			&:last-child  { padding-inline-end: 0; }
+		}
+	}
+
+	.uc-footer__heading {
+		@include type.type-style('productive-heading-03');
+		font-weight: 600;
+		color: theme.$text-inverse;
+		margin-block: 0 0 $spacing-06; /* 24px */
+		letter-spacing: .16px;
+	}
+
+	.uc-footer__list { list-style:none; margin:0; padding:0; }
+	.uc-footer__item { margin-block-end: $spacing-03; &:last-child{ margin-block-end:0; } }
+
+	a.uc-footer__link,
+	.uc-footer__link:link,
+	.uc-footer__link:visited,
+	.uc-footer__link:active {
+		@include type.type-style('body-short-01');
+		color: theme.$text-secondary;
+		text-decoration: none;
+		display: inline-block;
+		transition: color .11s cubic-bezier(.2,0,.38,.9);
+		&:focus-visible { outline:2px solid theme.$focus; outline-offset:2px; }
+	}
+	.uc-footer__link:hover,
+	.uc-footer__link:focus { color: theme.$text-inverse; text-decoration:none; }
+
+	.uc-footer__bottom {
+		border-block-start: 1px solid theme.$border-subtle;
+		padding-block-start: $spacing-06; /* 24px */
+		margin-block-start: $spacing-09;  /* 48px */
+		display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:$spacing-05;
+		@media (max-width: 671px){ flex-direction:column; align-items:flex-start; }
+	}
+	.uc-footer__legal-links { display:flex; gap:$spacing-07; flex-wrap:wrap; list-style:none; margin:0; padding:0; }
+	.uc-footer__legal-left { flex:1 1 auto; }
+	.uc-footer__legal-right{ flex:0 0 auto; }
+
+	.uc-footer__link-btn {
+		@include type.type-style('body-short-01');
+		color: theme.$text-secondary;
+		appearance:none; background:transparent; border:0; padding:0; cursor:pointer;
+		transition: color .11s cubic-bezier(.2,0,.38,.9);
+		&:hover,&:focus { color: theme.$text-inverse; }
+		&:focus-visible { outline:2px solid theme.$focus; outline-offset:2px; }
+		&[aria-busy="true"] { cursor:not-allowed; opacity:.5; }
+	}
+
+	.uc-footer__copyright-row { margin-block-start: $spacing-06; }
+	.uc-footer__copyright { @include type.type-style('body-short-01'); color: theme.$text-secondary; margin:0; }
+
+	.uc-footer__logo-svg { width:140px; height:32px; fill: theme.$text-inverse; display:block; }
+	.uc-footer__logo-link { color: theme.$text-inverse; display:inline-flex; align-items:center; text-decoration:none;
+		&:focus-visible{ outline:2px solid theme.$focus; outline-offset:4px; }
+	}
+}
+
+@layer ibm-parity {
+	.uc-footer {
+		background-color: #161616; /* Gray 100 */
+		.uc-footer__heading { font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif; font-size:18px; line-height:1.33; }
+		a.uc-footer__link,
+		.uc-footer__link-btn { font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif; font-size:14px; line-height:1.43; color:#c6c6c6; &:hover,&:focus{ color:#ffffff; } }
+		.uc-footer__bottom { border-top-color:#525252; } /* Gray 70 */
+		.uc-footer__copyright { font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif; font-size:14px; color:#c6c6c6; }
+		.uc-footer__logo-svg { fill:#ffffff; }
+	}
+}
+
+/* Footer-only responsive equal columns */
+@media (min-width: 672px){
+	/* Ensure footer rows use flex to allow equal column distribution (footer scope only) */
+	.uc-footer .cds--row { display:flex !important; }
+	.uc-footer .uc-footer__nav-row .cds--col-md-2 { flex:0 0 25% !important; max-width:25% !important; }
+}
+@media (min-width: 1056px){
+	.uc-footer .uc-footer__nav-row .cds--col-lg-4 { flex:0 0 25% !important; max-width:25% !important; }
+}
+.uc-sectiontitle__eyebrow { display:inline-block; margin-block-end: var(--cds-spacing-02); }
+.uc-sectiontitle__row { display:flex; gap: var(--cds-spacing-03); align-items:flex-end; justify-content:space-between; flex-wrap:wrap; }
+.uc-sectiontitle.uc-sectiontitle--center .uc-sectiontitle__row:not(.uc-sectiontitle__row--with-actions) { justify-content:center; }
+/* When centered without actions, JSX omits with-actions so we rely on center class for text-align; justify handled in component logic */
+.uc-sectiontitle__heading { margin:0; }
+.uc-sectiontitle__actions { display:inline-flex; gap: var(--cds-spacing-03); margin-inline-start:auto; align-items:center; }
+.uc-sectiontitle__subtitle { margin-block-start: var(--cds-spacing-02); }
+
+/* --- Hero / Media / Latest (token-first enhancements) --- */
+.uc-hero {
+	/* vertical rhythm and constrain text width without altering grid gutters */
+	padding-block: var(--cds-spacing-09) var(--cds-spacing-08);
+	& .uc-hero__title { max-inline-size: 42ch; }
+	& .uc-hero__tagline { max-inline-size: 56ch; margin-block-start: var(--cds-spacing-06); }
+	& .uc-hero__cta-group { display: inline-flex; flex-wrap: wrap; gap: var(--cds-spacing-04); margin-block-start: var(--cds-spacing-07); }
+}
+
+.uc-media {
+	background: var(--cds-layer-accent, var(--cds-layer));
+	padding: var(--cds-spacing-05);
+	border-radius: 0; /* keep flat per IBM style */
+	inline-size: 100%;
+	block-size: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: var(--cds-spacing-04);
+	/* inner AspectRatio should stretch */
+	& > .cds--aspect-ratio { inline-size: 100%; }
+	video, img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+}
+
+.uc-latest {
+	/* baseline spacing already above; reinforce constraints */
+	max-inline-size: 100%;
+	&__list { margin-block-start: var(--cds-spacing-04); }
+}
+@media (min-width: 1056px) {
+	.uc-latest { position: sticky; top: var(--cds-spacing-09); align-self: flex-start; }
+}
+
+/* --- UC: IBM-style hero tuning (token-first) --- */
+.uc-hero {
+	row-gap: var(--cds-spacing-07);
+	margin-block: 0 var(--cds-spacing-13); /* hero alt boşluğu artırıldı */
+	padding-block-start: var(--cds-spacing-05); /* üst nefes artırıldı */
+}
+
+.uc-hero h1 { /* h1 üst marjini sıfırlayarak sağ ray başlığı ile aynı baseline */
+	margin-block-start: 0;
+	margin-block-end: var(--cds-spacing-05);
+}
+
+/* Hero heading gradient already defined by .uc-title-gradient; tighten line-height */
+.uc-hero__title { line-height:1.04; letter-spacing:-.01em; color: var(--cds-link-primary, #0f62fe); }
+.uc-hero__title br { display:none; }
+@media (min-width:672px){ .uc-hero__title br { display:block; } }
+
+/* Alternate (tertiary) CTA style subtle alignment */
+.uc-hero__cta-alt { --shadow: none; }
+.uc-hero__cta-alt.cds--btn--tertiary { border: 1px solid var(--cds-border-subtle-02, var(--cds-border-subtle-01)); }
+.uc-hero__cta-alt.cds--btn--tertiary:hover { background: var(--cds-layer-hover); }
+
+/* Hero media flush variant (remove interior padding if any future reuse) */
+.uc-media--hero { padding:0; margin-block-start: 0; background: linear-gradient(135deg, var(--cds-background-brand, #0f62fe), #0053d7); position:relative; isolation:isolate; }
+
+/* Latest news separators & footer link spacing */
+.uc-latest__cards > a.uc-latest-card + a.uc-latest-card { border-top:1px solid var(--cds-border-subtle-02, var(--cds-border-subtle-01)); }
+.uc-latest__cards .uc-latest__more { border-top:1px solid var(--cds-border-subtle-02, var(--cds-border-subtle-01)); padding-block-start: var(--cds-spacing-05); }
+.uc-latest-card svg { transition: transform .12s ease, color .12s ease; }
+.uc-latest-card:hover svg, .uc-latest-card:focus svg { transform: translateX(2px); color: var(--cds-link-primary); }
+.uc-latest__all svg { transition: transform .12s ease; }
+.uc-latest__all:hover svg, .uc-latest__all:focus svg { transform: translateX(2px); }
+
+.uc-cta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--cds-spacing-05);
+	margin-block-start: var(--cds-spacing-06);
+}
+
+.uc-media {
+	/* 16:9 oranlı, taşma korumalı kapsayıcı */
+	aspect-ratio: 16 / 9;
+	inline-size: 100%;
+	overflow: hidden;
+}
+.uc-media > * {
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+}
+.uc-media video { opacity: 0; transition: opacity .35s ease; }
+@media (prefers-reduced-motion: reduce){
+	.uc-media video { transition: none; }
+}
+.uc-media__video--ready { opacity: 1 !important; }
+
+.uc-latest {
+	position: sticky;
+	top: calc(var(--uc-header-bottom, 0px) + var(--cds-spacing-12) + var(--cds-spacing-05)); /* hero baseline ile hizalama */
+	align-self: start;
+}
+
+/* Main content dynamic top offset so hero never hides behind header.
+   We add a single consistent spacer based on live header height plus a rhythm token. */
+/* Base layout offset: ensure hero never touches header; generous breathing room */
+/* Dynamic top offset: header real height + rhythm + optional cookie bar height */
+.uc-main-offset { /* header–hero üst ofset ek nefes */
+	--uc-cookie-bar-height: var(--uc-cookie-bar-height, 0px); /* future cookie bar integration */
+	padding-block-start: calc(var(--uc-header-bottom, 3rem) + var(--uc-cookie-bar-height) + var(--cds-spacing-12));
+}
+
+@media (min-width: 1056px) { /* large breakpoint adjustments */
+	.uc-main-offset { padding-block-start: calc(var(--uc-header-bottom, 3rem) + var(--uc-cookie-bar-height) + var(--cds-spacing-14)); }
+	.uc-latest { top: calc(var(--uc-header-bottom, 0px) + var(--uc-cookie-bar-height) + var(--cds-spacing-14) + var(--cds-spacing-05)); }
+}
+
+/* --- UC: Latest news heading --- */
+.uc-latest__title {
+	margin-block: 0 var(--cds-spacing-05);
+}
+
+/* === IBM-like mega menu compact spacing (append-only overrides) === */
+/* Keep z-stack: header (9000) < overlay (9100) < panel (9200) already defined above */
+/* Panel visuals: layer background, primary text, subtle shadow */
+.uc-mega { background: var(--cds-layer); color: var(--cds-text-primary); box-shadow: 0 2px 4px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.12); }
+/* Spacing: top ≈24px, bottom ≈16px, sides ≈24px */
+.uc-mega.uc-mega--columns { padding-block: var(--cds-spacing-06) var(--cds-spacing-05); }
+.uc-mega, .cds--header__menu { padding-inline: var(--cds-spacing-06); }
+/* Grid: 3 columns desktop, 2 columns on lg/md; tighter gaps for compact feel */
+.uc-mega-columns { grid-template-columns: repeat(3, 1fr); column-gap: var(--cds-spacing-07); row-gap: var(--cds-spacing-05); max-width: 1200px; }
+@media (max-width: 1055px) { .uc-mega-columns { grid-template-columns: repeat(2, 1fr); } }
+/* Link row spacing micro-tune */
+.uc-mega__link { padding-block: var(--cds-spacing-02); }
+
+/* === UC Mega Menu: overlay, z-index and fixed panel (Carbon token-first) === */
+.cds--header { z-index: 9000; }
+
+/* Lock scroll when mega is open */
+.uc-mega-open { overflow: hidden; }
+
+.uc-mega-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,.45);
+	z-index: 9100;
+}
+
+/* Default Carbon menu container pinned under header bottom */
+.cds--header__menu {
+	position: fixed;
+	inset-inline-start: 0;
+	top: var(--uc-header-bottom, 3rem);
+	inline-size: 100vw;
+	max-inline-size: 100%;
+	z-index: 9200;
+	background: var(--cds-layer, #fff);
+	box-shadow: 0 2px 4px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.12);
+}
+
+/* Latest news mini cards */
+.uc-latest__cards { display:flex; flex-direction:column; gap: 0; }
+.uc-latest-card { display:flex; align-items:center; justify-content:space-between; gap: var(--cds-spacing-05); padding: var(--cds-spacing-05) var(--cds-spacing-04); text-decoration:none; color: var(--cds-text-primary); border:1px solid transparent; border-radius:0; transition: background .12s ease, color .12s ease, border-color .12s ease; min-block-size:2.75rem; }
+.uc-latest-card:hover { background: var(--cds-layer-hover); color: var(--cds-text-primary); }
+.uc-latest-card:focus-visible { outline:2px solid var(--cds-focus); outline-offset:2px; }
+.uc-latest-card__text { font-size:.8125rem; line-height:1.28; flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.uc-latest__more { margin-block-start: var(--cds-spacing-04); }
+.uc-latest__all { display:inline-flex; align-items:center; gap: var(--cds-spacing-02); text-decoration:none; font-size:.8125rem; letter-spacing:.16px; }
+.uc-latest__all:hover { text-decoration:underline; }
+
+/* === UC: Recommended cards — IBM horizontal variant (append-only) === */
+.uc-reco-row {
+	display: flex;
+	border: 1px solid var(--cds-border-subtle-01);
+	border-inline-start: 0; /* we add start border via first child logic */
+	background: var(--cds-layer);
+	overflow-x: auto; /* safety if 5+ cards later */
+	scrollbar-width: none;
+}
+
+/* === UC: Developer toolkit section (IBM-style placeholder) === */
+.uc-devtoolkit { margin-block: var(--cds-spacing-11) var(--cds-spacing-10); }
+.uc-devtoolkit__heading { margin: 0 0 var(--cds-spacing-07); }
+.uc-devtoolkit__cols { row-gap: var(--cds-spacing-09); }
+.uc-devtoolkit__sub { margin: 0 0 var(--cds-spacing-05); }
+.uc-devtoolkit__intro { margin: 0 0 var(--cds-spacing-05); max-inline-size: 56ch; }
+.uc-devtoolkit__links { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--cds-spacing-04); }
+.uc-devtoolkit__item { margin: 0; }
+.uc-devtoolkit__item .cds--link { display: inline-flex; align-items: center; gap: var(--cds-spacing-02); }
+.uc-devtoolkit__accent:nth-child(1) { color: var(--cds-link-primary); }
+.uc-devtoolkit__accent:nth-child(2) { color: var(--cds-support-info, var(--cds-link-primary)); }
+.uc-devtoolkit__accent:nth-child(3) { color: var(--cds-link-visited, var(--cds-link-primary)); }
+
+/* === UC: Capability section (IBM-style category grid) === */
+.uc-capabilities-block { margin-block: var(--cds-spacing-11) var(--cds-spacing-10); }
+.uc-capabilities-block__heading { margin: 0; }
+.uc-capabilities-block__intro { margin: 0; max-inline-size: 60ch; }
+.uc-cap-grid {
+	margin-block-start: var(--cds-spacing-09);
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	border: 1px solid var(--cds-border-subtle-01);
+	border-inline-start: 0; /* collapse strategy */
+	border-block-start: 0;
+}
+@media (max-width: 1055px) {
+	.uc-cap-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 671px) {
+	.uc-cap-grid { grid-template-columns: 1fr; }
+}
+.uc-cap-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	padding: var(--cds-spacing-06) var(--cds-spacing-06) var(--cds-spacing-06) var(--cds-spacing-06);
+	text-decoration: none;
+	color: var(--cds-text-primary);
+	border-inline-start: 1px solid var(--cds-border-subtle-01);
+	border-block-start: 1px solid var(--cds-border-subtle-01);
+	background: var(--cds-layer);
+	min-block-size: 14rem;
+	transition: border-color .12s ease, background-color .12s ease;
+}
+.uc-cap-card:focus-visible { outline: 2px solid var(--cds-focus); outline-offset: -2px; }
+.uc-cap-card:hover { border-color: var(--cds-border-strong-01); background: var(--cds-layer); }
+.uc-cap-card__title { font-weight: 400; margin: 0; }
+.uc-cap-card__spacer { flex: 1 1 auto; }
+.uc-cap-card__icons { display: flex; justify-content: space-between; align-items: flex-end; margin-block-start: var(--cds-spacing-05); }
+.uc-cap-card__icon { inline-size: 2.5rem; block-size: 2.5rem; border: 1px solid var(--cds-border-subtle-01); background: var(--cds-layer-accent); }
+
+/* === UC: Header global actions parity (IBM-style) === */
+.uc-header-actions {
+	/* IBM: separator hemen nav bitişiğinde; iç boşluk minimum */
+	margin-inline-start: var(--cds-spacing-04); /* 16px -> 12px */
+	padding-inline-start: var(--cds-spacing-03); /* 12px -> 8px */
+	border-inline-start: 1px solid var(--cds-border-subtle-02, var(--cds-border-subtle-01));
+	display: flex;
+	gap: 0; /* ikonlar arasında boşluk yok */
+}
+
+/* Compact dropdown menus (Downloads/Login) keep trigger sizing & align panel under text */
+.uc-header-menu--compact > .cds--header__menu-trigger {
+	padding-inline: var(--cds-spacing-05) var(--cds-spacing-05);
+}
+.uc-header-menu--compact .cds--header__menu-title[aria-expanded="true"] {
+	background: var(--cds-layer-hover);
+}
+.uc-header-menu--compact .cds--header__menu {
+	inline-size: 14rem; /* modest width */
+}
+.uc-header-menu--compact .cds--header__menu .cds--header__menu-item a {
+	white-space: nowrap;
+}
+.uc-header-actions .cds--header__action { /* ensure consistent square hit area */
+	inline-size: 3rem;
+	block-size: 3rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--cds-icon-secondary, var(--cds-text-secondary));
+}
+/* Varsayılan Carbon header action’ı bazen min-inline-size ekleyebiliyor; flush almak için override */
+.uc-header-actions .cds--header__action + .cds--header__action { margin-inline-start: 0; }
+.uc-header-actions .cds--header__action svg { inline-size: 20px; block-size: 20px; }
+.uc-header-actions .cds--header__action:hover,
+.uc-header-actions .cds--header__action:focus { background: var(--cds-layer-hover); color: var(--cds-icon-primary, var(--cds-text-primary)); }
+.uc-header-actions .cds--header__action:hover { color: var(--cds-icon-primary, var(--cds-text-primary)); }
+.uc-header-actions .cds--header__action:focus-visible { outline: 2px solid var(--cds-focus); outline-offset: -2px; }
+
+.uc-reco-row::-webkit-scrollbar { display: none; }
+
+.uc-reco-row > .uc-reco-card { /* legacy safeguard if structure changes */
+	flex: 1 1 0;
+}
+
+.uc-reco-card { /* override vertical style into horizontal */
+	flex-direction: row;
+	align-items: flex-start;
+	gap: var(--cds-spacing-05);
+	padding: var(--cds-spacing-05) var(--cds-spacing-06);
+	border-block: 0; /* unify with row wrapper */
+	border-inline: 0; /* handled by row & separators */
+	position: relative;
+	background: var(--cds-layer);
+	min-block-size: auto;
+}
+.uc-reco-card + .uc-reco-card { border-inline-start: 1px solid var(--cds-border-subtle-01); }
+
+.uc-reco-card__media {
+	inline-size: 8rem;
+	block-size: 8rem;
+	aspect-ratio: 1 / 1;
+	background: var(--cds-layer-accent);
+	border: 1px solid var(--cds-border-subtle-01);
+	flex: 0 0 8rem;
+	margin: 0; /* remove previous bottom margin */
+}
+@media (max-width: 1055px) {
+	.uc-reco-card__media { inline-size: 6rem; block-size: 6rem; flex-basis: 6rem; }
+}
+
+.uc-reco-card__body { flex: 1 1 auto; display: flex; flex-direction: column; gap: var(--cds-spacing-03); min-width: 0; }
+.uc-reco-card__title { max-inline-size: none; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.uc-reco-card__desc { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.uc-reco-card__footer { margin-block-start: auto; display: inline-flex; color: var(--cds-link-primary, currentColor); }
+
+.uc-reco-card:hover { background: var(--cds-layer); border-color: var(--cds-border-strong-01); }
+.uc-reco-card:focus-visible { outline: 2px solid var(--cds-focus); outline-offset: -2px; }
+
+/* Support potential 5th card future: allow wrap fallback */
+@media (max-width: 1311px) {
+	.uc-reco-row { flex-wrap: wrap; }
+	.uc-reco-card { flex: 1 1 50%; border-inline: 0 !important; }
+	.uc-reco-card:nth-child(odd) { border-inline-end: 1px solid var(--cds-border-subtle-01); }
+	.uc-reco-card { border-block-start: 1px solid var(--cds-border-subtle-01); }
+	.uc-reco-card:nth-child(1), .uc-reco-card:nth-child(2) { border-block-start: 0; }
+}
+@media (max-width: 671px) {
+	.uc-reco-card { flex: 1 1 100%; border-inline: 0 !important; border-inline-end: 0 !important; }
+	.uc-reco-card { border-block-start: 1px solid var(--cds-border-subtle-01); }
+	.uc-reco-card:first-child { border-block-start: 0; }
+}
+
+/* --- UC: IBM parity incremental overrides (hero + right rail) --- */
+@include grid.flex-grid(); /* ensure flex grid utilities available (alongside css-grid) */
+
+.uc-hero__title {
+	color: var(--cds-link-primary, var(--cds-interactive-01));
+}
+
+.uc-latest {
+	border-inline-start: 1px solid var(--cds-border-subtle-01);
+}
+
+.uc-latest__list > li + li {
+	border-top: 1px solid var(--cds-border-subtle-01);
+	padding-block-start: var(--cds-spacing-04);
+	margin-block-start: var(--cds-spacing-04);
+}
+
+/* --- UC: Recommended cards row (IBM-style) --- */
+.uc-reco-block { margin-block: var(--cds-spacing-09) var(--cds-spacing-10); }
+.uc-reco-block__heading { margin: 0 0 var(--cds-spacing-06); }
+.uc-reco-grid { row-gap: var(--cds-spacing-07); }
+
+.uc-reco-card {
+	inline-size: 100%;
+	min-block-size: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--cds-spacing-03);
+	padding: var(--cds-spacing-05);
+	border: 1px solid var(--cds-border-subtle-01);
+	background: var(--cds-layer, #fff);
+	text-decoration: none;
+	transition: border-color .12s ease, background-color .12s ease, box-shadow .12s ease;
+}
+.uc-reco-card:hover,
+.uc-reco-card:focus-visible {
+	border-color: var(--cds-border-strong-01);
+	text-decoration: none;
+	box-shadow: 0 2px 4px rgba(0,0,0,.08);
+	outline: 2px solid var(--cds-focus, currentColor);
+	outline-offset: 2px;
+}
+.uc-reco-card__category { display:inline-block; }
+.uc-reco-card__title { display:block; }
+.uc-reco-card__desc { color: var(--cds-text-secondary); }
+
+/* --- UC: Recommended cards parity tweaks --- */
+.uc-reco-card { gap: var(--cds-spacing-03); }
+.uc-reco-card__media {
+	inline-size: 100%;
+	aspect-ratio: 16 / 9;
+	background: var(--cds-layer-accent);
+	margin-block-end: var(--cds-spacing-03);
+	overflow: hidden;
+}
+.uc-reco-card__category { color: var(--cds-text-secondary); }
+.uc-reco-card__title { max-inline-size: 30ch; }
+.uc-reco-grid > [class*="cds--col"]:not(:first-child) .uc-reco-card { border-inline-start: 0; }
+.uc-reco-card:hover,
+.uc-reco-card:focus-visible {
+	background: var(--cds-layer-hover);
+	box-shadow: none;
+	border-color: var(--cds-border-strong-01);
+}
+
+/* --- UC: IBM-like hero balance (media clamp + spacing) --- */
+
+/* Satır hizasını yukarı topla; başlık-CTA alanı ile media dengelensin */
+.uc-hero {
+	align-items: start;
+}
+
+/* Medya kolonu: genişliği kıs, 16:9 koru, taşmayı engelle */
+.uc-media {
+	/* 32rem ile 56rem arasında, ekrana göre ölçeklensin */
+	max-inline-size: clamp(32rem, 44vw, 56rem);
+	margin-inline: 0; /* grid gutter'a bırak */
+	aspect-ratio: 16 / 9;
+}
+.uc-media > img,
+.uc-media > video {
+	display: block;
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+}
+
+/* Right-rail başlığı ve blok aralığı: IBM sağ sütun hissi */
+.uc-latest {
+	padding-inline-start: var(--cds-spacing-05);
+}
+.uc-latest__title {
+	margin-block: 0 var(--cds-spacing-05);
+}

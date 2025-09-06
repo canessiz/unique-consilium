@@ -1,0 +1,76 @@
+{
+  "folders": [
+    {
+      "name": "unique-consilium-frontend",
+      "path": "C:\\Users\\canes\\unique-consilium\\unique-consilium-frontend"
+    },
+    {
+      "name": "Slim-Referans-Carbon",
+      "path": "C:\\Users\\canes\\Slim-Referans-Carbon"
+    }
+  ],
+  "settings": {
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.fixAll.eslint": "always",
+      "source.organizeImports": "never"
+    },
+    "eslint.useFlatConfig": true,
+    "eslint.validate": ["typescript", "typescriptreact"],
+    "typescript.tsserver.maxTsServerMemory": 4096,
+    "typescript.preferences.importModuleSpecifier": "shortest",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "prettier.printWidth": 100,
+    "prettier.singleQuote": true,
+    "prettier.trailingComma": "all",
+    "prettier.semi": true,
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/coverage": true,
+      "**/.turbo": true,
+      "**/.cache": true,
+      "**/.git": true,
+      "**/storybook": true,
+      "**/.storybook": true,
+      "**/stories": true,
+      "**/demo": true,
+      "**/demos": true,
+      "**/examples": true
+    },
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/coverage": true,
+      "**/.turbo": true,
+      "**/.cache": true,
+      "**/.git": true
+    },
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/.next/**": true,
+      "**/dist/**": true,
+      "**/build/**": true,
+      "**/coverage/**": true,
+      "**/.turbo/**": true,
+      "**/.cache/**": true
+    },
+    "terminal.integrated.cwd": "C:\\Users\\canes\\unique-consilium\\unique-consilium-frontend"
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode"
+    ]
+  }
+}
+
+

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# App Router generates /sitemap.xml
+Sitemap: /sitemap.xml

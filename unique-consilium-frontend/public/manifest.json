@@ -1,0 +1,11 @@
+{
+  "name": "Unique Consilium",
+  "short_name": "Unique Consilium",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f62fe",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any" }
+  ]
+}
