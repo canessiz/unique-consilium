@@ -1,0 +1,35 @@
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: celery -A backend worker -l info --concurrency=${CELERY_CONCURRENCY:-1}
+    environment:
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-backend.settings}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL","celery -A backend inspect ping -d celery@$$HOSTNAME -t 5 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis@sha256:3b73847e72874be07e6657b129a94761662b79bc0f679273757d4218573b2a98
+    command: ["redis-server","--appendonly","yes","--save","60","1000"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD","redis-cli","ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  redis_data: {}

@@ -1,0 +1,8 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: db/Dockerfile.pg16-pgbackrest
+    volumes:
+      - /srv/pgbackrest:/var/lib/pgbackrest
+      - /etc/pgbackrest:/etc/pgbackrest:ro

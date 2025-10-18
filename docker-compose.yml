@@ -1,0 +1,44 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      exec gunicorn backend.wsgi:application
+        --bind 0.0.0.0:8000
+        --workers 3
+        --timeout 60
+        --max-requests 500
+        --max-requests-jitter 50
+        --worker-tmp-dir /dev/shm
+        --log-level info
+      "
+    ports:
+      - "127.0.0.1:8001:8000"   # host 8001 -> container 8000
+    volumes:
+      - media:/app/media
+    healthcheck:
+      test: ["CMD-SHELL", "pidof gunicorn || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+  redis:
+    image: redis@sha256:3b73847e72874be07e6657b129a94761662b79bc0f679273757d4218573b2a98
+    command: ["redis-server", "--appendonly", "no"]
+    restart: unless-stopped
+
+volumes:
+  media:

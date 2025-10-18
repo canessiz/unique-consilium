@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres@sha256:7898d413578ff5fa67ce49233cc9743e282010eb2ec6ebf7834a63f4a60b05f0
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  web:
+    command: gunicorn -c gunicorn.conf.py backend.wsgi:application
+    environment:
+      - DJANGO_SETTINGS_MODULE=backend.settings
+      - DEBUG=1
+      - ALLOWED_HOSTS=127.0.0.1,localhost
+      - DJANGO_SECURE_SSL_REDIRECT=0
+      - STATIC_ROOT=/app/staticfiles
+      - MEDIA_ROOT=/app/media
+      - DATABASE_HOST=db
+      - DATABASE_PORT=${DATABASE_PORT:-5432}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      db:
+        condition: service_healthy
+    user: "10001:10001"
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect((\"127.0.0.1\",8000)); print(\"ok\")"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  pgdata:

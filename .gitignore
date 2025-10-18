@@ -1,0 +1,18 @@
+# Python & Django
+__pycache__/
+*.pyc
+.env
+.venv/
+*.sqlite3
+
+# Build/runtime
+media/
+staticfiles/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Reports/SBOM (repo içinde oluşursa)
+reports/
