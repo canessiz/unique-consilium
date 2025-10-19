@@ -1,0 +1,9 @@
+title = "UC allowlist"
+[allowlist]
+description = "Encrypted/false-positives"
+paths = [
+  '''\.sops$''',
+  '''\.sops\.ya?ml$''',
+  '''\.env\.sops$'''
+]
+regexes = ['''^FAKE_''']

@@ -1,0 +1,23 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: ruff check .
+        language: system
+        pass_filenames: false
+      - id: mypy
+        name: mypy
+        entry: bash -lc 'if [ -d backend ]; then mypy backend; else mypy .; fi'
+        language: system
+        pass_filenames: false
+      - id: bandit
+        name: bandit
+        entry: bash -lc 'TARGET="backend"; [ -d "$TARGET" ] || TARGET="."; bandit -r "$TARGET" -x tests -ll'
+        language: system
+        pass_filenames: false
+      - id: gitleaks
+        name: gitleaks (installed ise çalıştır)
+        entry: bash -lc 'command -v gitleaks >/dev/null || { echo "gitleaks not installed, skipping local check"; exit 0; }; gitleaks protect --verbose --redact --staged --no-banner'
+        language: system
+        pass_filenames: false
