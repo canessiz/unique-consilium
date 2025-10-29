@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Tile, Button } from '@carbon/react';
+import './Tile.stories.scss';
 
 const meta: Meta<typeof Tile> = {
   title: 'Components/Tile',
@@ -14,7 +15,7 @@ type Story = StoryObj<typeof Tile>;
 
 export const Default: Story = {};
 
-export const WithActions: Story = {
+export const WithActions: StoryObj<{ title: string; content: string; buttonLabel?: string }> = {
   args: {
     // keep args lightweight; render uses these
     title: 'Card title',
@@ -23,8 +24,8 @@ export const WithActions: Story = {
   },
   render: (args) => (
     <Tile>
-      <h3 style={{ margin: '0 0 8px 0' }}>{(args as any).title}</h3>
-      <p style={{ margin: '0 0 12px 0' }}>{(args as any).content}</p>
+      <h3 className="tile-title">{(args as any).title}</h3>
+      <p className="tile-desc">{(args as any).content}</p>
       <Button kind="danger" size="sm">{(args as any).buttonLabel || 'Delete'}</Button>
     </Tile>
   ),
