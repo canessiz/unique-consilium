@@ -19,13 +19,13 @@ export const WithActions: Story = {
     // keep args lightweight; render uses these
     title: 'Card title',
     content: 'This is a short description inside the tile used for the demo.',
-    buttonLabel: 'Action',
+    buttonLabel: 'Delete',
   },
   render: (args) => (
     <Tile>
       <h3 style={{ margin: '0 0 8px 0' }}>{(args as any).title}</h3>
       <p style={{ margin: '0 0 12px 0' }}>{(args as any).content}</p>
-      <Button size="sm">{(args as any).buttonLabel}</Button>
+      <Button kind="danger" size="sm">{(args as any).buttonLabel || 'Delete'}</Button>
     </Tile>
   ),
 };
