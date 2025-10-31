@@ -11,6 +11,11 @@ permissions:
 
 concurrency: ci-${{ github.ref }}
 
+# Tüm 'run' komutları frontend alt klasöründe çalışsın
+defaults:
+  run:
+    working-directory: unique-consilium-frontend
+
 jobs:
   chromatic:
     runs-on: ubuntu-latest
@@ -23,6 +28,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          # Cache hedefi alt klasördeki lock dosyası
+          cache-dependency-path: unique-consilium-frontend/package-lock.json
 
       - name: Install deps
         run: npm ci
