@@ -11,7 +11,7 @@ permissions:
 
 concurrency: ci-${{ github.ref }}
 
-# Tüm 'run' komutları frontend alt klasöründe çalışsın
+# Tüm komutlar frontend klasöründe çalışsın
 defaults:
   run:
     working-directory: unique-consilium-frontend
@@ -28,14 +28,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          # Cache hedefi alt klasördeki lock dosyası
           cache-dependency-path: unique-consilium-frontend/package-lock.json
 
       - name: Install deps
         run: npm ci
 
+      - name: Build Storybook
+        run: npm run build-storybook
+
       - name: Publish to Chromatic
-        run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --exit-zero-on-changes
+        run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --storybook-build-dir=storybook-static --exit-zero-on-changes
         env:
           STORYBOOK_DISABLE_TELEMETRY: '1'
           CI: 'true'
