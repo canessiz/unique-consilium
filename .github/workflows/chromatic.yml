@@ -1,32 +1,41 @@
-name: Chromatic PR Check
+name: Chromatic PR visual checks
 
 on:
   pull_request:
     branches: [ main ]
 
-concurrency:
-  group: chromatic-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+concurrency: ci-${{ github.ref }}
+
+# Tüm 'run' komutları frontend alt klasöründe çalışsın
+defaults:
+  run:
+    working-directory: unique-consilium-frontend
 
 jobs:
   chromatic:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-      - run: npm ci
-      - name: Publish to Chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          onlyChanged: true
-          autoAcceptChanges: false
-          exitOnceUploaded: true
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Setup Node (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          # Cache hedefi alt klasördeki lock dosyası
+          cache-dependency-path: unique-consilium-frontend/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Publish to Chromatic
+        run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --exit-zero-on-changes
+        env:
+          STORYBOOK_DISABLE_TELEMETRY: '1'
+          CI: 'true'
