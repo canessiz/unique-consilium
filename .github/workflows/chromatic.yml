@@ -1,14 +1,17 @@
 name: Chromatic PR Check
+
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+
+concurrency:
+  group: chromatic-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   chromatic:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: unique-consilium-frontend
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -16,6 +19,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
       - run: npm ci
-      - run: npm run build-storybook -- --output-dir=storybook-static
-      - run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --storybook-build-dir=storybook-static --exit-zero-on-changes
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          onlyChanged: true
+          autoAcceptChanges: false
+          exitOnceUploaded: true
+
