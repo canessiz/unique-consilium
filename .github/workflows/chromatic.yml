@@ -11,7 +11,6 @@ permissions:
 
 concurrency: ci-${{ github.ref }}
 
-# Tüm komutlar frontend klasöründe çalışsın
 defaults:
   run:
     working-directory: unique-consilium-frontend
@@ -23,21 +22,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node (LTS)
+      - name: Setup Node (22.x) + npm cache
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: unique-consilium-frontend/package-lock.json
 
-      - name: Install deps
-        run: npm ci
+      - name: Sanity check (pwd, Node/NPM, build script?)
+        run: |
+          pwd
+          node -v
+          npm -v
+          jq -r '.scripts["build-storybook"]' package.json
+
+      - name: Install deps (ci)
+        run: npm ci --no-audit --no-fund
 
       - name: Build Storybook
         run: npm run build-storybook
 
-      - name: Publish to Chromatic
-        run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --storybook-build-dir=storybook-static --exit-zero-on-changes
+      - name: Publish to Chromatic (debug)
+        run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --storybook-build-dir=storybook-static --exit-zero-on-changes --debug
         env:
           STORYBOOK_DISABLE_TELEMETRY: '1'
           CI: 'true'
