@@ -1,21 +1,49 @@
-name: Chromatic
+name: Chromatic PR visual checks
+
 on:
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+concurrency: ci-${{ github.ref }}
+
+defaults:
+  run:
+    working-directory: unique-consilium-frontend
 
 jobs:
   chromatic:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (22.x) + npm cache
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - run: npm ci
-      - name: Publish to Chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          exitZeroOnChanges: true
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: unique-consilium-frontend/package-lock.json
+
+      - name: Sanity check (pwd, Node/NPM, build script?)
+        run: |
+          pwd
+          node -v
+          npm -v
+          jq -r '.scripts["build-storybook"]' package.json
+
+      - name: Install deps (ci)
+        run: npm ci --no-audit --no-fund
+
+      - name: Build Storybook
+        run: npm run build-storybook
+
+      - name: Publish to Chromatic (debug)
+        run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --storybook-build-dir=storybook-static --exit-zero-on-changes --debug
+        env:
+          STORYBOOK_DISABLE_TELEMETRY: '1'
+          CI: 'true'

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { InlineLoading } from '@carbon/react';
 import Button, { ButtonProps } from './Button';
+import './Button.stories.scss';
 
 type Kind = 'primary' | 'secondary' | 'danger' | 'tertiary' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
@@ -13,6 +14,7 @@ const meta: Meta<typeof Button> = {
     kind: 'primary' as Kind,
     size: 'md' as Size,
   },
+  tags: ['autodocs'],
   argTypes: {
     kind: {
       control: { type: 'select' },
@@ -46,7 +48,7 @@ export const Loading: Story = {
   render: (args) => (
     <Button {...args} disabled>
       <InlineLoading status="active" />
-      <span style={{ paddingInlineStart: 'var(--cds-spacing-03)' }}>{args.children ?? 'Loading'}</span>
+      <span className="btn-loading-gap">{args.children ?? 'Loading'}</span>
     </Button>
   ),
   args: {
