@@ -1,21 +1,21 @@
-name: Chromatic
+name: Chromatic PR Check
 on:
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
-
+    branches:
+      - main
 jobs:
   chromatic:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: unique-consilium-frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22'
       - run: npm ci
-      - name: Publish to Chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          exitZeroOnChanges: true
+      - run: npm run build-storybook -- --output-dir=storybook-static
+      - run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --storybook-build-dir=storybook-static --exit-zero-on-changes
