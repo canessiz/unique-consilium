@@ -6,6 +6,9 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   trailingSlash: false,
+  // Avoid hard-failing production builds due to ESLint CLI option mismatch (ESLint v9 vs Next runner)
+  // Linting is still available via `npm run lint`.
+  eslint: { ignoreDuringBuilds: true },
 
   // DEV’de basePath/assetPrefix/rewrites KULLANMA
   // (404'lara yol açar; prod’da gerekiyorsa ayrı ele alırız)
