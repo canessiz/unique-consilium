@@ -1,8 +1,8 @@
 name: Chromatic PR Check
 on:
   pull_request:
-    branches: [ main ]
-ECHO is on.
+    branches:
+      - main
 jobs:
   chromatic:
     runs-on: ubuntu-latest
@@ -10,17 +10,12 @@ jobs:
       run:
         working-directory: unique-consilium-frontend
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Use Node 22
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Clean install
-        run: npm ci
-      - name: Build Storybook
-        run: npm run build-storybook -- --output-dir=storybook-static
-      - name: Chromatic
-        run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --storybook-build-dir=storybook-static --exit-zero-on-changes
+      - run: npm ci
+      - run: npm run build-storybook -- --output-dir=storybook-static
+      - run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --storybook-build-dir=storybook-static --exit-zero-on-changes
