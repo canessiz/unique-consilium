@@ -59,7 +59,10 @@ const preview: Preview = {
         md:  { name: 'md — 672',  styles: { width: '672px',  height: '100%' } },
         lg:  { name: 'lg — 1056', styles: { width: '1056px', height: '100%' } },
         xlg: { name: 'xlg — 1312',styles: { width: '1312px', height: '100%' } },
+        max: { name: 'max — 1584', styles: { width: '1584px', height: '100%'} },
+
       },
+      defaultViewport: 'lg',
     },
   },
 };

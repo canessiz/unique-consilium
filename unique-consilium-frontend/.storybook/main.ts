@@ -3,8 +3,13 @@ import type { StorybookConfig } from '@storybook/nextjs';
 const config: StorybookConfig = {
   framework: '@storybook/nextjs',
   stories: ['../components/**/*.stories.@(tsx|mdx)'],
-  addons: ['@storybook/addon-a11y'],
-  webpackFinal: async (config) => {
+addons: [
+  '@storybook/addon-a11y',
+  '@storybook/addon-measure',
+  '@storybook/addon-outline',
+],
+
+webpackFinal: async (config) => {
     // Enable quieter Sass warnings from dependencies
     const rules = (config.module?.rules ?? []) as any[];
     const visit = (rule: any) => {
